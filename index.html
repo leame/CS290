@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+  <title>How-To: Set Up a Slack Bot</title>
+ 
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/scrolling-nav.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<!-- The #page-top ID is part of the scrolling feature - the data-spy and data-target are part of the built-in Bootstrap scrollspy function -->
+
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand page-scroll" href="#page-top">Slack Bot</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav">
+                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                    <li class="hidden">
+                        <a class="page-scroll" href="#page-top"></a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#API">API Token</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#read">Reading the Channel</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#write">Writing to the Channel</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#resources">Additional Resources</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Intro Section -->
+    <section id="intro" class="intro-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+<h1>Welcome!</h1>
+This tutorial will teach you how to set up a custom bot for a Slack channel.
+<br>
+<br>
+<h3>Why?</h3>
+Slack is a messaging app and collaborative tool used by teams to communicate. Slack supports many built in apps that can be used for organization or just for a fun. Though Slack offers a basic bot that can be programmed to respond to user messages and there are many apps ready to be installed, a custom-written Slack bot can be designed to meet your needs exactly. It can use numerous third-party APIs to add functionality to a channel. A Slack bot can read user messages in the channel, call upon third-party APIs, parse the response data, and return a message to the channel.
+<br>
+<br>
+<h3>What this guide covers:</h3>
+<ul>
+<li>How to get an API token for your bot and protect it</li>
+<li>How to set up a Slack bot in Node.js to read your Slack channel</li>
+<li>How to respond to messages from users</li>
+</ul>
+
+<h3>References:</h3>
+The following documentation files will be useful for creating this bot:
+<br><a href="https://nodejs.org/en/docs/">Node.js documentation</a>
+<br><a href="https://api.slack.com/">Slack API Documentation</a>
+<br><a href="https://github.com/slackapi/node-slack-sdk">Slack Developer Kit for Node.js Documentation</a>
+<br>
+<br>Let's get started!
+
+<br>
+<br>
+<a class="btn btn-default page-scroll" href="#API">Click Me to Scroll Down!</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Section -->
+    <section id="API" class="API-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+<h1>API Token</h1>
+A Slack bot sits in the channel like a user, so we have to make an account for it.
+<br><a href="https://my.slack.com/services/new/bot">Create a new bot user.</a>
+<br><img class="img-thumbnail" src="createbot.png" height="200px">
+<br>
+<br>
+<br>Go to your channel and invite the bot into the channel.
+<br><code>/invite @jarvis</code>
+<br><img class="img-thumbnail" src="invitebot.png" height="200px">
+<br>
+<br>
+<br>Back on the configuration page, your channels should look similar to this.
+<br><img class="img-thumbnail" src="botchannels.png" height="200px">
+<br>
+<br>
+<br>And your API token can be found here.
+<br><img class="img-thumbnail" src="botAPI.png" height="200px">
+<br>
+<br>
+<br>Later on, when you write the code for your bot, you will want to use a variable in your code instead of your API token.
+<br><code>var token = process.env.SLACK_API_TOKEN || '';</code>
+<br>
+<br>Then when you start your .js file, you can pass the token in by typing
+<br><code>SLACK_API_TOKEN=xoxb-YOUR-API-TOKEN-HERE node index.js</code>
+					
+                </div>
+            </div>
+        </div>
+    </section>
+	
+    <!-- Read Section -->
+    <section id="read" class="read-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1>Reading the Channel</h1>
+This tutorial assumes you have <a href="https://nodejs.org/en/download/package-manager/">node.js installed</a> in your local environment.
+<br>
+<br>Slack provides an <a href=
+"https://api.slack.com/rtm">Real Time Messaging API (RTM API)</a> which opens up a websocket connection with Slack and allows our bot to interact with users. As the name implies, the RTM API allows our bot to recieve Slack events in real time. Once the websocket connection has been opened, our bot will be able to recieve a stream of event messages from almost every action in Slack.
+<br>
+<br>
+<br>Install the <a href="https://github.com/slackapi/node-slack-sdk">Slack Developer Kit for Node.js</a>, which is a wrapper library that helps us work with Slack's RTM and Web APIs. 
+<br><code>npm install @slack/client --save</code>
+<br>
+<br>
+<br>Create a .js file for your bot. Intially, the file should contain:
+<br><pre>var RtmClient = require('@slack/client').RtmClient;
+var RTM_EVENTS = require('@slack/client').RTM_EVENTS;
+var bot_token = process.env.SLACK_API_TOKEN || '';;
+
+var rtm = new RtmClient(bot_token);
+
+rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
+  console.log('Message:', message);
+});
+
+rtm.start();
+</pre>
+<br>
+<ul>
+<br><pre>RtmClient</pre> stores a reference to RtmClient using the previously installed library.
+<br><pre>RTM_EVENTS</pre> does the same.
+<br><pre>bot_token</pre> holds our API token or passes in a blank variable which will cause the call to fail.
+<br><pre>rtm</pre> creates an RtmClient and passes in our token.
+</ul>
+<br>
+<br>For the next function, as messages are received in the Slack channel, we receive a JSON response in our console. Try it out. Tell your bot, "Hello!"
+<br>
+<br>You should see something like this in your console:
+<br><pre>Message: { type: 'message',
+  channel: 'XXXXXXXXX',
+  user: 'XXXXXXXXX',
+  text: 'Hello!',
+  ts: 'XXXXXXXXX.XXXXXXXXX',
+  source_team: 'XXXXXXXXX' }</pre>
+  
+<br>
+<br>The JSON responses RTM logs form the foundation of your bot. You can use them to choose how your bot responds to commands in the channel, or give your bot a personality. JSON elements can be accessed by using do notation to access its elements.
+<br>
+<br>We told our bot the JSON object above could be called <pre>message</pre>
+<br>Therefore we access the text element by referring to <pre>message.text</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Write Section -->
+    <section id="write" class="write-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1>Writing to the Channel</h1>
+<h3>Baby's first words</h3>
+We can read the JSON response to have the bot respond to keywords.
+<br>
+<br>Try adding this to your .js file:
+<br><pre>
+rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
+  if (message.text == "Hello!") {
+    rtm.sendMessage("Hello <@" + message.user + ">!", message.channel);
+  } else if (message.text == "How are you?") {
+    rtm.sendMessage("Never been better! How about you, <@" + message.user + ">?", message.channel);
+  }
+  
+});
+</pre>
+<br>Our bot gives us a personalized response.
+<br>
+<br>
+<ul>
+<br><pre>sendMessage</pre> sends a message back to Slack.
+<br><pre>message.user</pre> prints the name of the user who spoke.
+<br><pre>message.channel</pre> indicates that the response goes back to the channel the event came from. This could also be set up to go to a different channel or as a direct message to a user.
+</ul>
+<br>
+<br>This is just a basic example of keyword response. Bots can also incorporate the APIs of natural language programs and provide stimulating conversational interaction based on much a larger database. Some sample APIs will be linked at the end of this tutorial.
+<br>
+<br>
+
+<h3>I can tell when it's raining</h3>
+Here's an example of the bot calling a weather API. This assumes you have an API token for the API you want to call. Install request so the bot can make http calls.
+<br><code>npm install request --save</code>
+<br>
+<br><pre>
+rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
+  if (message.text.indexOf(".w ") !=-1) {
+  var location = message.text.replace(".w ","");
+  var request = require('request');
+  request('http://api.openweathermap.org/data/2.5/weather?zip=' +
+    location + ',us' + '&units=imperial' + APIKey, function(error, response, body) {
+  
+  var response = JSON.parse(body);
+  
+  rtm.sendMessage("The temperature in " + response.name + ', '
+    + response.sys.country + " is " + response.main.temp + "F", message.channel);  
+	
+  })
+  }
+});
+</pre>
+<br>
+<br>In this example, when a user enters .w and the zipcode, the bot will send a GET request to the weather API. The weather API returns a JSON object, which we parse, then the bot will send a message to slack with the location and temperature. For example, try <code>.w 90210</code>
+<br>
+<br>Third-party API keys can be hidden in different files, and the main bot .js file can call other files. The GET request doesn't have to be written into your main file.
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section id="resources" class="resources-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+				<h1>Additional Resources</h1>
+Here are some APIs that can make your bot more useful (or um... "useful").
+<br>
+<br>
+<ul>
+<li><a href="https://toggl.com/">Toggl</a> - A time tracker </li>
+<li><a href="https://wit.ai/">Wit.ai</a> - A natural language app</li>
+<li><a href="https://cloud.google.com/vision/">Cloud Vision</a> - Machine learning models for image manipulation</li>
+<li><a href="http://giphy.com/">Giphy</a> - Search gifs by keyword</li>
+<li><a href="https://catfacts-api.appspot.com/">Cat Facts</a> - Random cat facts</li>
+</ul>
+				
+                </div>
+            </div>
+        </div>
+    </section>
+	
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Scrolling Nav JavaScript -->
+    <script src="js/jquery.easing.min.js"></script>
+    <script src="js/scrolling-nav.js"></script>
+
+</body>
+</html>
